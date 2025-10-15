@@ -1,4 +1,4 @@
-package Arrays;
+
 
 public class ValidAnagram_242 {
     public boolean isAnagram(String s, String t) {
