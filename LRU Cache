@@ -1,0 +1,56 @@
+class Node:
+    __slots__ = ("k", "v", "prev", "next")
+    def __init__(self, k=0, v=0):
+        self.k, self.v = k, v
+        self.prev = self.next = None
+
+class LRUCache:
+    def __init__(self, capacity: int):
+        self.cap = capacity
+        self.map = {}
+        # dummy head/tail
+        self.head, self.tail = Node(), Node()
+        self.head.next = self.tail
+        self.tail.prev = self.head
+
+    def _add_first(self, node: Node):
+        node.next = self.head.next
+        node.prev = self.head
+        self.head.next.prev = node
+        self.head.next = node
+
+    def _remove(self, node: Node):
+        p, n = node.prev, node.next
+        p.next = n
+        n.prev = p
+
+    def _move_to_first(self, node: Node):
+        self._remove(node)
+        self._add_first(node)
+
+    def get(self, key: int) -> int:
+        if key not in self.map:
+            return -1
+        node = self.map[key]
+        self._move_to_first(node)
+        return node.v
+
+    def put(self, key: int, value: int) -> None:
+        if key in self.map:
+            node = self.map[key]
+            node.v = value
+            self._move_to_first(node)
+            return
+        node = Node(key, value)
+        self.map[key] = node
+        self._add_first(node)
+        if len(self.map) > self.cap:
+            # evict LRU (node before tail)
+            lru = self.tail.prev
+            self._remove(lru)
+            del self.map[lru.k]
+
+# Quick check
+# ops = ["LRUCache","put","put","get","put","get","put","get","get","get"]
+# args= [[2],[1,1],[2,2],[1],[3,3],[2],[4,4],[1],[3],[4]]
+# out:  [None,None,None,1,None,-1,None,-1,3,4]
